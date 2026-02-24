@@ -9,6 +9,10 @@ function niceName(path) {
   return decodeURIComponent(parts[parts.length - 1] || '');
 }
 
+function encodePath(path) {
+  return path.split('/').map(encodeURIComponent).join('/');
+}
+
 const path = getParam('path');
 const title = document.getElementById('title');
 const viewer = document.getElementById('viewer');
@@ -21,7 +25,7 @@ if (!path) {
   const rawBase = 'https://raw.githubusercontent.com/nilotic/WWDC/master/docs/';
   const mediaBase = 'https://media.githubusercontent.com/media/nilotic/WWDC/master/docs/';
   const pdfjsBase = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/web/viewer.html?file=';
-  const encoded = encodeURI(path);
+  const encoded = encodePath(path);
   const rawUrl = rawBase + encoded;
   const mediaUrl = mediaBase + encoded;
   const pagesUrl = path;
