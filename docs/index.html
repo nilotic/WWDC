@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WWDC 2024–2025 Archive</title>
+  <meta name="description" content="WWDC 2024–2025 session archive with summaries and PDFs. Client-side search, no server required." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Spectral:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="bg"></div>
+  <header class="hero">
+    <div class="hero-inner">
+      <div class="kicker">WWDC 2024–2025 Knowledge Archive</div>
+      <h1>Search WWDC sessions like you have an AI assistant — without running one.</h1>
+      <p class="sub">Client-side search over curated summaries and PDFs. Free, fast, and public.</p>
+      <div class="controls">
+        <div class="searchbox">
+          <input id="query" type="search" placeholder="Ask about SwiftUI layout, visionOS, or App Intents…" autocomplete="off" />
+          <button id="searchBtn">Search</button>
+        </div>
+        <div class="filters">
+          <select id="yearFilter">
+            <option value="">All years</option>
+            <option value="2024">WWDC 2024</option>
+            <option value="2025">WWDC 2025</option>
+          </select>
+          <a class="ghost" href="INDEX.md">Full index</a>
+        </div>
+      </div>
+      <div class="chips">
+        <button class="chip" data-q="SwiftUI">SwiftUI</button>
+        <button class="chip" data-q="visionOS">visionOS</button>
+        <button class="chip" data-q="App Intents">App Intents</button>
+        <button class="chip" data-q="Concurrency">Concurrency</button>
+        <button class="chip" data-q="Core ML">Core ML</button>
+      </div>
+      <div class="meta">
+        <span id="stats">Loading index…</span>
+        <span class="dot">•</span>
+        <span>No server. No API cost.</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="content">
+    <section class="results">
+      <div class="results-header">
+        <h2>Results</h2>
+        <span id="count"></span>
+      </div>
+      <div id="results" class="results-grid"></div>
+    </section>
+
+    <section class="about">
+      <h3>How this works</h3>
+      <p>This archive runs entirely in your browser. The search index is built from session summaries, and each result links to both the summary and the PDF.</p>
+      <div class="about-grid">
+        <div>
+          <div class="label">Data</div>
+          <div>Summaries + PDFs</div>
+        </div>
+        <div>
+          <div class="label">Search</div>
+          <div>Lunr.js (client-side)</div>
+        </div>
+        <div>
+          <div class="label">Hosting</div>
+          <div>GitHub Pages</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div>© WWDC Archive</div>
+    <div class="links">
+      <a href="https://github.com/nilotic/WWDC">GitHub</a>
+      <a href="search.json">Search data</a>
+    </div>
+  </footer>
+
+  <script src="https://unpkg.com/lunr/lunr.js"></script>
+  <script src="search.js"></script>
+</body>
+</html>

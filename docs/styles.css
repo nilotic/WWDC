@@ -1,0 +1,232 @@
+:root {
+  --bg: #0d1117;
+  --ink: #f4f1ec;
+  --muted: #b0b7c3;
+  --accent: #ffcf66;
+  --accent-2: #7cd4ff;
+  --card: rgba(18, 23, 33, 0.75);
+  --border: rgba(255, 255, 255, 0.12);
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: "Space Grotesk", system-ui, -apple-system, sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+}
+
+.bg {
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(1200px 600px at 10% 10%, rgba(124, 212, 255, 0.12), transparent 60%),
+    radial-gradient(1000px 500px at 90% 20%, rgba(255, 207, 102, 0.15), transparent 55%),
+    linear-gradient(180deg, #0d1117 0%, #0b0f14 100%);
+  z-index: -1;
+}
+
+.hero {
+  padding: 72px 24px 40px;
+  border-bottom: 1px solid var(--border);
+}
+
+.hero-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.kicker {
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+
+h1 {
+  font-size: clamp(28px, 4vw, 52px);
+  line-height: 1.05;
+  margin: 0 0 16px;
+  font-weight: 700;
+}
+
+.sub {
+  font-family: "Spectral", serif;
+  font-size: clamp(16px, 2.2vw, 20px);
+  color: var(--muted);
+  margin: 0 0 28px;
+}
+
+.controls {
+  display: grid;
+  gap: 16px;
+}
+
+.searchbox {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 10px;
+  border-radius: 14px;
+  backdrop-filter: blur(10px);
+}
+
+.searchbox input {
+  background: transparent;
+  border: 0;
+  color: var(--ink);
+  font-size: 16px;
+  padding: 8px 12px;
+  outline: none;
+}
+
+.searchbox button {
+  background: var(--accent);
+  color: #1c1f25;
+  border: 0;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.filters {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.filters select,
+.filters .ghost {
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--ink);
+  padding: 8px 12px;
+  border-radius: 10px;
+  text-decoration: none;
+}
+
+.chips {
+  margin: 18px 0 10px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.chip {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border);
+  color: var(--ink);
+  padding: 6px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.meta {
+  display: flex;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 14px;
+  align-items: center;
+}
+
+.dot { opacity: 0.6; }
+
+.content {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 30px 24px 80px;
+}
+
+.results-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.results-grid {
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px;
+  display: grid;
+  gap: 10px;
+}
+
+.card h4 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.card .year {
+  color: var(--accent-2);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.card .excerpt {
+  color: var(--muted);
+  font-family: "Spectral", serif;
+  font-size: 14px;
+  line-height: 1.4;
+  max-height: 4.2em;
+  overflow: hidden;
+}
+
+.card .links {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.card .links a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.about {
+  margin-top: 48px;
+  padding: 24px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: rgba(9, 12, 18, 0.8);
+}
+
+.about-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; }
+
+.footer {
+  border-top: 1px solid var(--border);
+  padding: 20px 24px;
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted);
+}
+
+.footer a { color: var(--muted); text-decoration: none; }
+
+@media (max-width: 720px) {
+  .searchbox {
+    grid-template-columns: 1fr;
+  }
+  .searchbox button { width: 100%; }
+  .footer { flex-direction: column; gap: 8px; }
+}

@@ -57,18 +57,17 @@ The long-term vision is to evolve this into a searchable AI knowledge base for A
 ## 🗂 Structure
 
 ```
-WWDC/
+docs/
 ├── 2024/
-│   ├── SwiftUI/
-│   ├── Concurrency/
-│   ├── System/
+│   ├── Session Title/
 │   └── ...
 ├── 2025/
-│   ├── SwiftUI/
-│   ├── Design/
-│   ├── DeveloperTools/
+│   ├── Session Title/
 │   └── ...
-└── PDFs/
+├── INDEX.md
+├── index.html
+├── search.json
+└── search.js
 ```
 
 Each session typically includes:
@@ -93,6 +92,15 @@ This archive is being prepared for:
 * Developer-focused knowledge retrieval
 
 More updates coming soon.
+
+<br>
+<br>
+
+## 🌐 GitHub Pages
+
+This repository is configured for GitHub Pages using the `docs/` folder.
+
+Settings → Pages → Deploy from branch → `main` / `docs`
 
 <br>
 <br>
