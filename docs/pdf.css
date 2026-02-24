@@ -36,26 +36,39 @@ body {
   margin: 8px 0 12px;
 }
 
+.progress {
+  position: relative;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.progress-bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #7cd4ff, #ffcf66);
+  transition: width 200ms ease;
+}
+
+.progress.indeterminate .progress-bar {
+  width: 40%;
+  animation: slide 1.2s infinite ease-in-out;
+}
+
+@keyframes slide {
+  0% { transform: translateX(-60%); }
+  100% { transform: translateX(220%); }
+}
+
 .controls {
   display: flex;
   gap: 12px;
   align-items: center;
   flex-wrap: wrap;
   margin-bottom: 12px;
-}
-
-.controls button {
-  background: rgba(255,255,255,0.06);
-  border: 1px solid var(--border);
-  color: var(--ink);
-  padding: 6px 12px;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-.controls button:disabled {
-  opacity: 0.4;
-  cursor: default;
 }
 
 .links a {
@@ -71,13 +84,23 @@ body {
   background: #1a1f27;
   display: flex;
   justify-content: center;
-  align-items: flex-start;
   padding: 12px;
   overflow: auto;
   min-height: 60vh;
 }
 
-canvas {
+.pages {
+  width: 100%;
+  display: grid;
+  gap: 16px;
+}
+
+.page {
+  display: flex;
+  justify-content: center;
+}
+
+.page canvas {
   background: #fff;
   max-width: 100%;
   height: auto;

@@ -16,15 +16,14 @@ function encodePath(path) {
 const path = getParam('path');
 const title = document.getElementById('title');
 const statusEl = document.getElementById('status');
-const canvas = document.getElementById('canvas');
 const pageInfo = document.getElementById('pageInfo');
-const prevBtn = document.getElementById('prev');
-const nextBtn = document.getElementById('next');
 const linksEl = document.getElementById('links');
 const debugEl = document.getElementById('debug');
+const progressEl = document.getElementById('progress');
+const progressBar = document.getElementById('progressBar');
+const pagesEl = document.getElementById('pages');
 
 let pdfDoc = null;
-let pageNum = 1;
 const errors = [];
 
 function setStatus(msg) {
@@ -35,20 +34,83 @@ function setDebug(msg) {
   debugEl.textContent = msg || '';
 }
 
+function setProgress(pct) {
+  if (pct == null) {
+    progressEl.classList.add('indeterminate');
+    progressBar.style.width = '40%';
+    return;
+  }
+  progressEl.classList.remove('indeterminate');
+  progressBar.style.width = `${Math.min(100, Math.max(0, pct))}%`;
+}
+
 function buildLinks(pagesUrl, mediaUrl, rawUrl) {
   linksEl.innerHTML = `<a href="${pagesUrl}">Pages</a> · <a href="${mediaUrl}">Media</a> · <a href="${rawUrl}">Raw</a>`;
 }
 
-async function renderPage(num) {
-  const page = await pdfDoc.getPage(num);
-  const viewport = page.getViewport({ scale: 1.2 });
-  const ctx = canvas.getContext('2d');
-  canvas.height = viewport.height;
-  canvas.width = viewport.width;
-  await page.render({ canvasContext: ctx, viewport }).promise;
-  pageInfo.textContent = `Page ${num} / ${pdfDoc.numPages}`;
-  prevBtn.disabled = num <= 1;
-  nextBtn.disabled = num >= pdfDoc.numPages;
+async function renderAllPages() {
+  pagesEl.innerHTML = '';
+  const total = pdfDoc.numPages;
+  pageInfo.textContent = `Pages ${total}`;
+
+  for (let i = 1; i <= total; i += 1) {
+    setStatus(`Rendering page ${i} / ${total}…`);
+    const page = await pdfDoc.getPage(i);
+    const viewport = page.getViewport({ scale: 1.2 });
+    const wrapper = document.createElement('div');
+    wrapper.className = 'page';
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.height = viewport.height;
+    canvas.width = viewport.width;
+    wrapper.appendChild(canvas);
+    pagesEl.appendChild(wrapper);
+    await page.render({ canvasContext: ctx, viewport }).promise;
+  }
+  setStatus('');
+}
+
+async function fetchWithProgress(url) {
+  const res = await fetch(url, { mode: 'cors', cache: 'no-store', redirect: 'follow' });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+  const type = (res.headers.get('content-type') || '').toLowerCase();
+  const length = Number(res.headers.get('content-length') || 0);
+
+  if (!res.body || !res.body.getReader) {
+    const buf = await res.arrayBuffer();
+    return { buf, type };
+  }
+
+  const reader = res.body.getReader();
+  const chunks = [];
+  let received = 0;
+
+  if (!length) {
+    setProgress(null);
+  }
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    chunks.push(value);
+    received += value.length;
+    if (length) {
+      const pct = Math.round((received / length) * 100);
+      setProgress(pct);
+      setStatus(`Downloading… ${pct}%`);
+    }
+  }
+
+  const buf = new Uint8Array(received);
+  let offset = 0;
+  for (const chunk of chunks) {
+    buf.set(chunk, offset);
+    offset += chunk.length;
+  }
+
+  if (length) setProgress(100);
+  return { buf: buf.buffer, type };
 }
 
 async function loadPdf(urls) {
@@ -57,21 +119,21 @@ async function loadPdf(urls) {
     try {
       setStatus(`Loading PDF from ${url}…`);
       if (!window.pdfjsLib) throw new Error('pdf.js not loaded');
-      const res = await fetch(url, { mode: 'cors', cache: 'no-store', redirect: 'follow' });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const type = (res.headers.get('content-type') || '').toLowerCase();
-      const buf = await res.arrayBuffer();
+
+      const { buf, type } = await fetchWithProgress(url);
       if (!buf || buf.byteLength < 1024) throw new Error('Empty response');
       const header = new TextDecoder().decode(buf.slice(0, 5));
       if (type.includes('html') || header !== '%PDF-') {
         throw new Error(`Not a PDF (type=${type || 'unknown'})`);
       }
+
+      setStatus('Rendering…');
       const loadingTask = pdfjsLib.getDocument({ data: buf });
       pdfDoc = await loadingTask.promise;
-      pageNum = 1;
-      await renderPage(pageNum);
+      await renderAllPages();
       setStatus('');
       setDebug('');
+      setProgress(100);
       return;
     } catch (e) {
       const msg = e && e.message ? e.message : String(e);
@@ -100,18 +162,7 @@ if (!path) {
   } else {
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
     buildLinks(pagesUrl, mediaUrl, rawUrl);
+    setProgress(0);
     loadPdf({ pagesUrl, mediaUrl, rawUrl });
   }
 }
-
-prevBtn.addEventListener('click', async () => {
-  if (!pdfDoc || pageNum <= 1) return;
-  pageNum -= 1;
-  await renderPage(pageNum);
-});
-
-nextBtn.addEventListener('click', async () => {
-  if (!pdfDoc || pageNum >= pdfDoc.numPages) return;
-  pageNum += 1;
-  await renderPage(pageNum);
-});
