@@ -15,7 +15,7 @@ function escapeHtml(str) {
 
 function render(results) {
   resultsEl.innerHTML = '';
-  countEl.textContent = results.length ? `${results.length} results` : 'No results yet';
+  countEl.textContent = results.length ? `${results.length} results` : 'No results';
 
   results.forEach((item) => {
     const div = document.createElement('div');
@@ -45,6 +45,18 @@ function buildIndex() {
   });
 }
 
+function pickFeatured(items) {
+  const keywords = ['Keynote', 'Platforms State of the Union', 'What\'s new', 'State of the Union'];
+  const featured = [];
+  for (const item of items) {
+    if (keywords.some((k) => item.title.includes(k))) featured.push(item);
+  }
+  const unique = Array.from(new Map(featured.map((i) => [i.id, i])).values());
+  if (unique.length >= 12) return unique.slice(0, 12);
+  const fallback = items.slice(0, 12);
+  return unique.concat(fallback.filter((i) => !unique.find((u) => u.id === i.id))).slice(0, 12);
+}
+
 function filterYear(items) {
   const y = yearEl.value;
   if (!y) return items;
@@ -54,7 +66,9 @@ function filterYear(items) {
 function search() {
   const q = queryEl.value.trim();
   if (!q) {
-    render(filterYear(state.data).slice(0, 60));
+    const featured = pickFeatured(filterYear(state.data));
+    countEl.textContent = 'Featured sessions';
+    render(featured);
     return;
   }
 
@@ -65,13 +79,25 @@ function search() {
     } catch (e) {
       hits = [];
     }
-    render(filterYear(hits));
+    const filtered = filterYear(hits);
+    if (filtered.length === 0) {
+      countEl.textContent = 'No results — showing featured sessions';
+      render(pickFeatured(filterYear(state.data)));
+    } else {
+      render(filtered);
+    }
   } else {
     const lower = q.toLowerCase();
     const hits = state.data.filter((d) =>
       d.title.toLowerCase().includes(lower) || d.text.toLowerCase().includes(lower)
     );
-    render(filterYear(hits));
+    const filtered = filterYear(hits);
+    if (filtered.length === 0) {
+      countEl.textContent = 'No results — showing featured sessions';
+      render(pickFeatured(filterYear(state.data)));
+    } else {
+      render(filtered);
+    }
   }
 }
 
@@ -81,7 +107,8 @@ async function init() {
   state.dataById = new Map(state.data.map((d) => [d.id, d]));
   state.idx = buildIndex();
   statsEl.textContent = `${state.data.length} sessions indexed`;
-  render(state.data.slice(0, 60));
+  countEl.textContent = 'Featured sessions';
+  render(pickFeatured(state.data));
 }
 
 queryEl.addEventListener('input', () => search());
