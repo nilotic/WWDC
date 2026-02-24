@@ -16,15 +16,15 @@ function encodePath(path) {
 const path = getParam('path');
 const title = document.getElementById('title');
 const statusEl = document.getElementById('status');
-const pageInfo = document.getElementById('pageInfo');
-const linksEl = document.getElementById('links');
 const debugEl = document.getElementById('debug');
 const progressEl = document.getElementById('progress');
 const progressBar = document.getElementById('progressBar');
 const pagesEl = document.getElementById('pages');
+const downloadBtn = document.getElementById('download');
 
 let pdfDoc = null;
 const errors = [];
+let downloadUrl = null;
 
 function setStatus(msg) {
   statusEl.textContent = msg;
@@ -44,14 +44,9 @@ function setProgress(pct) {
   progressBar.style.width = `${Math.min(100, Math.max(0, pct))}%`;
 }
 
-function buildLinks(pagesUrl, mediaUrl, rawUrl) {
-  linksEl.innerHTML = `<a href="${pagesUrl}">Pages</a> · <a href="${mediaUrl}">Media</a> · <a href="${rawUrl}">Raw</a>`;
-}
-
 async function renderAllPages() {
   pagesEl.innerHTML = '';
   const total = pdfDoc.numPages;
-  pageInfo.textContent = `Pages ${total}`;
 
   for (let i = 1; i <= total; i += 1) {
     setStatus(`Rendering page ${i} / ${total}…`);
@@ -127,6 +122,9 @@ async function loadPdf(urls) {
         throw new Error(`Not a PDF (type=${type || 'unknown'})`);
       }
 
+      downloadUrl = url;
+      downloadBtn.disabled = false;
+
       setStatus('Rendering…');
       const loadingTask = pdfjsLib.getDocument({ data: buf });
       pdfDoc = await loadingTask.promise;
@@ -142,7 +140,7 @@ async function loadPdf(urls) {
       setStatus(`Failed to load from ${url}`);
     }
   }
-  setStatus('All sources failed. Use direct links above to download.');
+  setStatus('All sources failed. Use Download to try again later.');
   if (errors.length) setDebug(errors.join('\n'));
 }
 
@@ -155,13 +153,16 @@ if (!path) {
   const rawUrl = `https://raw.githubusercontent.com/nilotic/WWDC/master/docs/${encoded}`;
   const mediaUrl = `https://media.githubusercontent.com/media/nilotic/WWDC/master/docs/${encoded}`;
 
+  downloadBtn.disabled = true;
+  downloadBtn.addEventListener('click', () => {
+    if (downloadUrl) window.open(downloadUrl, '_blank');
+  });
+
   if (!window.pdfjsLib) {
     setStatus('pdf.js failed to load. Check network or CSP.');
     setDebug('pdf.js global not found');
-    buildLinks(pagesUrl, mediaUrl, rawUrl);
   } else {
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-    buildLinks(pagesUrl, mediaUrl, rawUrl);
     setProgress(0);
     loadPdf({ pagesUrl, mediaUrl, rawUrl });
   }

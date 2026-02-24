@@ -71,11 +71,14 @@ body {
   margin-bottom: 12px;
 }
 
-.links a {
-  color: var(--accent);
-  text-decoration: none;
+.download {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border);
+  color: var(--ink);
+  padding: 8px 14px;
+  border-radius: 10px;
+  cursor: pointer;
   font-weight: 600;
-  margin-left: 8px;
 }
 
 .viewer {
