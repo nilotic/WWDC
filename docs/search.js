@@ -57,6 +57,43 @@ function pickFeatured(items) {
   return unique.concat(fallback.filter((i) => !unique.find((u) => u.id === i.id))).slice(0, 12);
 }
 
+function groupByYear(items) {
+  const groups = new Map();
+  items.forEach((item) => {
+    if (!groups.has(item.year)) groups.set(item.year, []);
+    groups.get(item.year).push(item);
+  });
+  const years = Array.from(groups.keys()).sort().reverse();
+  return years.map((year) => ({ year, items: groups.get(year) }));
+}
+
+function renderFeaturedByYear(items) {
+  resultsEl.innerHTML = '';
+  const groups = groupByYear(items);
+  groups.forEach((group) => {
+    const section = document.createElement('section');
+    section.className = 'year-section';
+    section.innerHTML = `<div class="year-title">WWDC ${group.year}</div><div class="results-grid"></div>`;
+    const grid = section.querySelector('.results-grid');
+    group.items.forEach((item) => {
+      const div = document.createElement('div');
+      div.className = 'card';
+      const excerpt = item.text ? item.text.slice(0, 220) + (item.text.length > 220 ? '…' : '') : 'No summary text available.';
+      const summaryLink = item.summary_url ? `<a href="${item.summary_url}">Summary</a>` : '';
+      const pdfLink = item.pdf_url ? `<a href="${item.pdf_url}">PDF</a>` : '';
+
+      div.innerHTML = `
+        <div class="year">WWDC ${item.year}</div>
+        <h4>${escapeHtml(item.title)}</h4>
+        <div class="excerpt">${escapeHtml(excerpt)}</div>
+        <div class="links">${summaryLink} ${pdfLink}</div>
+      `;
+      grid.appendChild(div);
+    });
+    resultsEl.appendChild(section);
+  });
+}
+
 function filterYear(items) {
   const y = yearEl.value;
   if (!y) return items;
@@ -68,7 +105,7 @@ function search() {
   if (!q) {
     const featured = pickFeatured(filterYear(state.data));
     countEl.textContent = 'Featured sessions';
-    render(featured);
+    renderFeaturedByYear(featured);
     return;
   }
 
@@ -82,7 +119,7 @@ function search() {
     const filtered = filterYear(hits);
     if (filtered.length === 0) {
       countEl.textContent = 'No results — showing featured sessions';
-      render(pickFeatured(filterYear(state.data)));
+      renderFeaturedByYear(pickFeatured(filterYear(state.data)));
     } else {
       render(filtered);
     }
@@ -94,7 +131,7 @@ function search() {
     const filtered = filterYear(hits);
     if (filtered.length === 0) {
       countEl.textContent = 'No results — showing featured sessions';
-      render(pickFeatured(filterYear(state.data)));
+      renderFeaturedByYear(pickFeatured(filterYear(state.data)));
     } else {
       render(filtered);
     }
@@ -108,7 +145,7 @@ async function init() {
   state.idx = buildIndex();
   statsEl.textContent = `${state.data.length} sessions indexed`;
   countEl.textContent = 'Featured sessions';
-  render(pickFeatured(state.data));
+  renderFeaturedByYear(pickFeatured(state.data));
 }
 
 queryEl.addEventListener('input', () => search());

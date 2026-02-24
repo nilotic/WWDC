@@ -154,6 +154,17 @@ h1 {
   gap: 16px;
 }
 
+.year-section {
+  margin-bottom: 28px;
+}
+
+.year-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 8px 0 10px;
+}
+
 .card {
   background: var(--card);
   border: 1px solid var(--border);
