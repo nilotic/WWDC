@@ -15,6 +15,8 @@ function escapeHtml(str) {
 
 function render(results) {
   resultsEl.innerHTML = '';
+  resultsEl.classList.add('results-grid');
+  resultsEl.classList.remove('results-sections');
   countEl.textContent = results.length ? `${results.length} results` : 'No results';
 
   results.forEach((item) => {
@@ -45,7 +47,7 @@ function buildIndex() {
   });
 }
 
-function pickFeatured(items) {
+function pickFeaturedByYear(items, limitPerYear = 25) {
   const keywords = [
     'Keynote',
     'Platforms State of the Union',
@@ -56,14 +58,19 @@ function pickFeatured(items) {
     'UIKit',
     'iOS',
   ];
-  const featured = [];
-  for (const item of items) {
-    if (keywords.some((k) => item.title.includes(k))) featured.push(item);
-  }
-  const unique = Array.from(new Map(featured.map((i) => [i.id, i])).values());
-  if (unique.length >= 12) return unique.slice(0, 12);
-  const fallback = items.slice(0, 12);
-  return unique.concat(fallback.filter((i) => !unique.find((u) => u.id === i.id))).slice(0, 12);
+  const groups = groupByYear(items);
+  const result = [];
+
+  groups.forEach((group) => {
+    const featured = group.items.filter((item) => keywords.some((k) => item.title.includes(k)));
+    const unique = Array.from(new Map(featured.map((i) => [i.id, i])).values());
+    const filled = unique.concat(
+      group.items.filter((i) => !unique.find((u) => u.id === i.id))
+    ).slice(0, limitPerYear);
+    result.push({ year: group.year, items: filled });
+  });
+
+  return result;
 }
 
 function groupByYear(items) {
@@ -76,14 +83,15 @@ function groupByYear(items) {
   return years.map((year) => ({ year, items: groups.get(year) }));
 }
 
-function renderSectionedByYear(items) {
+function renderSectionedByYear(groups) {
   resultsEl.innerHTML = '';
-  const groups = groupByYear(items);
+  resultsEl.classList.remove('results-grid');
+  resultsEl.classList.add('results-sections');
   groups.forEach((group) => {
     const section = document.createElement('section');
     section.className = 'year-section';
     const shortYear = String(group.year).slice(-2);
-    section.innerHTML = `<div class="year-title">WWDC${shortYear}</div><div class="results-grid"></div>`;
+    section.innerHTML = `<div class="year-title">WWDC ${shortYear}</div><div class="results-grid"></div>`;
     const grid = section.querySelector('.results-grid');
     group.items.forEach((item) => {
       const div = document.createElement('div');
@@ -100,7 +108,7 @@ function renderSectionedByYear(items) {
       `;
       grid.appendChild(div);
     });
-    resultsEl.appendChild(section);
+  resultsEl.appendChild(section);
   });
 }
 
@@ -110,19 +118,10 @@ function filterYear(items) {
   return items.filter((it) => it.year === y);
 }
 
-function renderResults(results) {
-  const y = yearEl.value;
-  if (!y) {
-    renderSectionedByYear(results);
-  } else {
-    render(results);
-  }
-}
-
 function search() {
   const q = queryEl.value.trim();
   if (!q) {
-    const featured = pickFeatured(filterYear(state.data));
+    const featured = pickFeaturedByYear(filterYear(state.data));
     countEl.textContent = 'Featured sessions';
     renderSectionedByYear(featured);
     return;
@@ -138,9 +137,9 @@ function search() {
     const filtered = filterYear(hits);
     if (filtered.length === 0) {
       countEl.textContent = 'No results — showing featured sessions';
-      renderSectionedByYear(pickFeatured(filterYear(state.data)));
+      renderSectionedByYear(pickFeaturedByYear(filterYear(state.data)));
     } else {
-      renderResults(filtered);
+      render(filtered);
     }
   } else {
     const lower = q.toLowerCase();
@@ -150,9 +149,9 @@ function search() {
     const filtered = filterYear(hits);
     if (filtered.length === 0) {
       countEl.textContent = 'No results — showing featured sessions';
-      renderSectionedByYear(pickFeatured(filterYear(state.data)));
+      renderSectionedByYear(pickFeaturedByYear(filterYear(state.data)));
     } else {
-      renderResults(filtered);
+      render(filtered);
     }
   }
 }
@@ -164,7 +163,7 @@ async function init() {
   state.idx = buildIndex();
   statsEl.textContent = `${state.data.length} sessions indexed`;
   countEl.textContent = 'Featured sessions';
-  renderSectionedByYear(pickFeatured(state.data));
+  renderSectionedByYear(pickFeaturedByYear(state.data));
 }
 
 queryEl.addEventListener('input', () => search());

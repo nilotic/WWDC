@@ -154,6 +154,11 @@ h1 {
   gap: 16px;
 }
 
+.results-sections {
+  margin-top: 16px;
+  display: block;
+}
+
 .year-section {
   margin-bottom: 28px;
 }
