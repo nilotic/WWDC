@@ -49,8 +49,12 @@ async function loadPdf(urls) {
   const tryUrls = [urls.mediaUrl, urls.rawUrl, urls.pagesUrl];
   for (const url of tryUrls) {
     try {
-      setStatus(`Loading PDF…`);
-      const loadingTask = pdfjsLib.getDocument({ url });
+      setStatus(`Loading PDF from ${url}…`);
+      const res = await fetch(url, { mode: 'cors' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const buf = await res.arrayBuffer();
+      if (!buf || buf.byteLength < 1024) throw new Error('Empty response');
+      const loadingTask = pdfjsLib.getDocument({ data: buf });
       pdfDoc = await loadingTask.promise;
       pageNum = 1;
       await renderPage(pageNum);
