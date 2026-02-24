@@ -21,6 +21,7 @@ const pageInfo = document.getElementById('pageInfo');
 const prevBtn = document.getElementById('prev');
 const nextBtn = document.getElementById('next');
 const linksEl = document.getElementById('links');
+const debugEl = document.getElementById('debug');
 
 let pdfDoc = null;
 let pageNum = 1;
@@ -28,6 +29,10 @@ const errors = [];
 
 function setStatus(msg) {
   statusEl.textContent = msg;
+}
+
+function setDebug(msg) {
+  debugEl.textContent = msg || '';
 }
 
 function buildLinks(pagesUrl, mediaUrl, rawUrl) {
@@ -52,7 +57,7 @@ async function loadPdf(urls) {
     try {
       setStatus(`Loading PDF from ${url}…`);
       if (!window.pdfjsLib) throw new Error('pdf.js not loaded');
-      const res = await fetch(url, { mode: 'cors', cache: 'no-store' });
+      const res = await fetch(url, { mode: 'cors', cache: 'no-store', redirect: 'follow' });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const type = (res.headers.get('content-type') || '').toLowerCase();
       const buf = await res.arrayBuffer();
@@ -66,17 +71,17 @@ async function loadPdf(urls) {
       pageNum = 1;
       await renderPage(pageNum);
       setStatus('');
+      setDebug('');
       return;
     } catch (e) {
-      errors.push(`${url} → ${e.message || e}`);
+      const msg = e && e.message ? e.message : String(e);
+      errors.push(`${url} → ${msg}`);
+      setDebug(errors.join('\n'));
       setStatus(`Failed to load from ${url}`);
     }
   }
   setStatus('All sources failed. Use direct links above to download.');
-  if (errors.length) {
-    const detail = errors.map((e) => `• ${e}`).join('\\n');
-    statusEl.textContent = `${statusEl.textContent}\\n${detail}`;
-  }
+  if (errors.length) setDebug(errors.join('\n'));
 }
 
 if (!path) {
@@ -90,13 +95,13 @@ if (!path) {
 
   if (!window.pdfjsLib) {
     setStatus('pdf.js failed to load. Check network or CSP.');
+    setDebug('pdf.js global not found');
     buildLinks(pagesUrl, mediaUrl, rawUrl);
-    return;
+  } else {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    buildLinks(pagesUrl, mediaUrl, rawUrl);
+    loadPdf({ pagesUrl, mediaUrl, rawUrl });
   }
-
-  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-  buildLinks(pagesUrl, mediaUrl, rawUrl);
-  loadPdf({ pagesUrl, mediaUrl, rawUrl });
 }
 
 prevBtn.addEventListener('click', async () => {
