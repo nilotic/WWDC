@@ -19,21 +19,24 @@ if (!path) {
 } else {
   title.textContent = niceName(path);
   const rawBase = 'https://raw.githubusercontent.com/nilotic/WWDC/master/docs/';
-  const rawUrl = rawBase + encodeURI(path);
+  const mediaBase = 'https://media.githubusercontent.com/media/nilotic/WWDC/master/docs/';
+  const encoded = encodeURI(path);
+  const rawUrl = rawBase + encoded;
+  const mediaUrl = mediaBase + encoded;
 
-  // Try Pages-served file first; fallback to raw if it isn't a PDF.
+  // Try Pages-served file first; fallback to GitHub media/raw if needed.
   fetch(path, { method: 'HEAD' })
     .then((res) => {
       const type = (res.headers.get('content-type') || '').toLowerCase();
       if (res.ok && type.includes('pdf')) {
         viewer.src = path;
       } else {
-        viewer.src = rawUrl;
-        fallback.innerHTML = `If the PDF doesn't render here, open it directly: <a href=\"${rawUrl}\">Open PDF</a>`;
+        viewer.src = mediaUrl;
+        fallback.innerHTML = `If the PDF doesn't render here, open it directly: <a href=\"${mediaUrl}\">Open PDF</a> · <a href=\"${rawUrl}\">Raw</a>`;
       }
     })
     .catch(() => {
-      viewer.src = rawUrl;
-      fallback.innerHTML = `If the PDF doesn't render here, open it directly: <a href=\"${rawUrl}\">Open PDF</a>`;
+      viewer.src = mediaUrl;
+      fallback.innerHTML = `If the PDF doesn't render here, open it directly: <a href=\"${mediaUrl}\">Open PDF</a> · <a href=\"${rawUrl}\">Raw</a>`;
     });
 }
