@@ -20,23 +20,28 @@ if (!path) {
   title.textContent = niceName(path);
   const rawBase = 'https://raw.githubusercontent.com/nilotic/WWDC/master/docs/';
   const mediaBase = 'https://media.githubusercontent.com/media/nilotic/WWDC/master/docs/';
+  const pdfjsBase = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/web/viewer.html?file=';
   const encoded = encodeURI(path);
   const rawUrl = rawBase + encoded;
   const mediaUrl = mediaBase + encoded;
+  const pagesUrl = path;
 
-  // Try Pages-served file first; fallback to GitHub media/raw if needed.
-  fetch(path, { method: 'HEAD' })
+  const viewerUrl = (fileUrl) => `${pdfjsBase}${encodeURIComponent(fileUrl)}`;
+
+  // Prefer media URL for LFS compatibility, but allow Pages if it serves real PDFs.
+  fetch(pagesUrl, { method: 'HEAD' })
     .then((res) => {
       const type = (res.headers.get('content-type') || '').toLowerCase();
       if (res.ok && type.includes('pdf')) {
-        viewer.src = path;
+        viewer.src = viewerUrl(pagesUrl);
+        fallback.innerHTML = `Open directly: <a href="${pagesUrl}">Pages</a> · <a href="${mediaUrl}">Media</a> · <a href="${rawUrl}">Raw</a>`;
       } else {
-        viewer.src = mediaUrl;
-        fallback.innerHTML = `If the PDF doesn't render here, open it directly: <a href=\"${mediaUrl}\">Open PDF</a> · <a href=\"${rawUrl}\">Raw</a>`;
+        viewer.src = viewerUrl(mediaUrl);
+        fallback.innerHTML = `If the PDF doesn't render here, open it directly: <a href="${mediaUrl}">Media</a> · <a href="${rawUrl}">Raw</a>`;
       }
     })
     .catch(() => {
-      viewer.src = mediaUrl;
-      fallback.innerHTML = `If the PDF doesn't render here, open it directly: <a href=\"${mediaUrl}\">Open PDF</a> · <a href=\"${rawUrl}\">Raw</a>`;
+      viewer.src = viewerUrl(mediaUrl);
+      fallback.innerHTML = `If the PDF doesn't render here, open it directly: <a href="${mediaUrl}">Media</a> · <a href="${rawUrl}">Raw</a>`;
     });
 }
