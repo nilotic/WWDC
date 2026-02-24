@@ -2,6 +2,10 @@
 
 > An AI-powered archive of WWDC 2024–2025 sessions — structured summaries, technical insights, and searchable references for Apple platform engineers.
 
+📊 254 sessions structured (WWDC24: 158, WWDC25: 96)  
+📁 1,564 indexed files  
+🧠 AI-ready knowledge archive
+
 <br>
 <br>
 
