@@ -46,7 +46,16 @@ function buildIndex() {
 }
 
 function pickFeatured(items) {
-  const keywords = ['Keynote', 'Platforms State of the Union', 'What\'s new', 'State of the Union'];
+  const keywords = [
+    'Keynote',
+    'Platforms State of the Union',
+    'State of the Union',
+    'What\'s new',
+    'Swift',
+    'SwiftUI',
+    'UIKit',
+    'iOS',
+  ];
   const featured = [];
   for (const item of items) {
     if (keywords.some((k) => item.title.includes(k))) featured.push(item);
@@ -73,7 +82,8 @@ function renderSectionedByYear(items) {
   groups.forEach((group) => {
     const section = document.createElement('section');
     section.className = 'year-section';
-    section.innerHTML = `<div class="year-title">WWDC ${group.year}</div><div class="results-grid"></div>`;
+    const shortYear = String(group.year).slice(-2);
+    section.innerHTML = `<div class="year-title">WWDC${shortYear}</div><div class="results-grid"></div>`;
     const grid = section.querySelector('.results-grid');
     group.items.forEach((item) => {
       const div = document.createElement('div');
