@@ -43,3 +43,15 @@ iframe {
   border-radius: 12px;
   background: #fff;
 }
+
+.fallback {
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.fallback a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+}
