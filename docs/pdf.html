@@ -29,7 +29,31 @@
     <pre id="debug" class="debug"></pre>
   </main>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-  <script src="pdf.js"></script>
+  <script>
+    (function () {
+      const statusEl = document.getElementById('status');
+      const debugEl = document.getElementById('debug');
+      const setStatus = (msg) => { statusEl.textContent = msg; };
+      const setDebug = (msg) => { debugEl.textContent = msg || ''; };
+
+      function loadScript(src) {
+        return new Promise((resolve, reject) => {
+          const s = document.createElement('script');
+          s.src = src;
+          s.onload = resolve;
+          s.onerror = () => reject(new Error(`Failed to load ${src}`));
+          document.head.appendChild(s);
+        });
+      }
+
+      setStatus('Loading viewer…');
+      loadScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js')
+        .then(() => loadScript(`pdf.js?v=${Date.now()}`))
+        .catch((err) => {
+          setStatus('Viewer failed to load.');
+          setDebug(err.message || String(err));
+        });
+    })();
+  </script>
 </body>
 </html>
