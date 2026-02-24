@@ -50,10 +50,15 @@ async function loadPdf(urls) {
   for (const url of tryUrls) {
     try {
       setStatus(`Loading PDF from ${url}…`);
-      const res = await fetch(url, { mode: 'cors' });
+      const res = await fetch(url, { mode: 'cors', cache: 'no-store' });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const type = (res.headers.get('content-type') || '').toLowerCase();
       const buf = await res.arrayBuffer();
       if (!buf || buf.byteLength < 1024) throw new Error('Empty response');
+      const header = new TextDecoder().decode(buf.slice(0, 5));
+      if (type.includes('html') || header !== '%PDF-') {
+        throw new Error(`Not a PDF (type=${type || 'unknown'})`);
+      }
       const loadingTask = pdfjsLib.getDocument({ data: buf });
       pdfDoc = await loadingTask.promise;
       pageNum = 1;
