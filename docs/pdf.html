@@ -16,9 +16,19 @@
   </header>
   <main class="wrap">
     <div id="title" class="title"></div>
-    <iframe id="viewer" title="PDF Viewer"></iframe>
-    <div id="fallback" class="fallback"></div>
+    <div class="controls">
+      <button id="prev" disabled>Prev</button>
+      <span id="pageInfo">Page 0 / 0</span>
+      <button id="next" disabled>Next</button>
+      <div class="links" id="links"></div>
+    </div>
+    <div class="viewer">
+      <canvas id="canvas"></canvas>
+    </div>
+    <div id="status" class="status"></div>
   </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script src="pdf.js"></script>
 </body>
 </html>

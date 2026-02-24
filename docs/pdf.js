@@ -15,37 +15,76 @@ function encodePath(path) {
 
 const path = getParam('path');
 const title = document.getElementById('title');
-const viewer = document.getElementById('viewer');
-const fallback = document.getElementById('fallback');
+const statusEl = document.getElementById('status');
+const canvas = document.getElementById('canvas');
+const pageInfo = document.getElementById('pageInfo');
+const prevBtn = document.getElementById('prev');
+const nextBtn = document.getElementById('next');
+const linksEl = document.getElementById('links');
+
+let pdfDoc = null;
+let pageNum = 1;
+
+function setStatus(msg) {
+  statusEl.textContent = msg;
+}
+
+function buildLinks(pagesUrl, mediaUrl, rawUrl) {
+  linksEl.innerHTML = `<a href="${pagesUrl}">Pages</a> · <a href="${mediaUrl}">Media</a> · <a href="${rawUrl}">Raw</a>`;
+}
+
+async function renderPage(num) {
+  const page = await pdfDoc.getPage(num);
+  const viewport = page.getViewport({ scale: 1.2 });
+  const ctx = canvas.getContext('2d');
+  canvas.height = viewport.height;
+  canvas.width = viewport.width;
+  await page.render({ canvasContext: ctx, viewport }).promise;
+  pageInfo.textContent = `Page ${num} / ${pdfDoc.numPages}`;
+  prevBtn.disabled = num <= 1;
+  nextBtn.disabled = num >= pdfDoc.numPages;
+}
+
+async function loadPdf(urls) {
+  const tryUrls = [urls.mediaUrl, urls.rawUrl, urls.pagesUrl];
+  for (const url of tryUrls) {
+    try {
+      setStatus(`Loading PDF…`);
+      const loadingTask = pdfjsLib.getDocument({ url });
+      pdfDoc = await loadingTask.promise;
+      pageNum = 1;
+      await renderPage(pageNum);
+      setStatus('');
+      return;
+    } catch (e) {
+      setStatus(`Failed to load from ${url}`);
+    }
+  }
+  setStatus('All sources failed. Use direct links above to download.');
+}
 
 if (!path) {
   title.textContent = 'No PDF specified.';
 } else {
   title.textContent = niceName(path);
-  const rawBase = 'https://raw.githubusercontent.com/nilotic/WWDC/master/docs/';
-  const mediaBase = 'https://media.githubusercontent.com/media/nilotic/WWDC/master/docs/';
-  const pdfjsBase = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/web/viewer.html?file=';
   const encoded = encodePath(path);
-  const rawUrl = rawBase + encoded;
-  const mediaUrl = mediaBase + encoded;
   const pagesUrl = path;
+  const rawUrl = `https://raw.githubusercontent.com/nilotic/WWDC/master/docs/${encoded}`;
+  const mediaUrl = `https://media.githubusercontent.com/media/nilotic/WWDC/master/docs/${encoded}`;
 
-  const viewerUrl = (fileUrl) => `${pdfjsBase}${encodeURIComponent(fileUrl)}`;
-
-  // Prefer media URL for LFS compatibility, but allow Pages if it serves real PDFs.
-  fetch(pagesUrl, { method: 'HEAD' })
-    .then((res) => {
-      const type = (res.headers.get('content-type') || '').toLowerCase();
-      if (res.ok && type.includes('pdf')) {
-        viewer.src = viewerUrl(pagesUrl);
-        fallback.innerHTML = `Open directly: <a href="${pagesUrl}">Pages</a> · <a href="${mediaUrl}">Media</a> · <a href="${rawUrl}">Raw</a>`;
-      } else {
-        viewer.src = viewerUrl(mediaUrl);
-        fallback.innerHTML = `If the PDF doesn't render here, open it directly: <a href="${mediaUrl}">Media</a> · <a href="${rawUrl}">Raw</a>`;
-      }
-    })
-    .catch(() => {
-      viewer.src = viewerUrl(mediaUrl);
-      fallback.innerHTML = `If the PDF doesn't render here, open it directly: <a href="${mediaUrl}">Media</a> · <a href="${rawUrl}">Raw</a>`;
-    });
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  buildLinks(pagesUrl, mediaUrl, rawUrl);
+  loadPdf({ pagesUrl, mediaUrl, rawUrl });
 }
+
+prevBtn.addEventListener('click', async () => {
+  if (!pdfDoc || pageNum <= 1) return;
+  pageNum -= 1;
+  await renderPage(pageNum);
+});
+
+nextBtn.addEventListener('click', async () => {
+  if (!pdfDoc || pageNum >= pdfDoc.numPages) return;
+  pageNum += 1;
+  await renderPage(pageNum);
+});

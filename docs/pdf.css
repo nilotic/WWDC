@@ -36,22 +36,55 @@ body {
   margin: 8px 0 12px;
 }
 
-iframe {
-  width: 100%;
-  height: 80vh;
+.controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.controls button {
+  background: rgba(255,255,255,0.06);
   border: 1px solid var(--border);
-  border-radius: 12px;
-  background: #fff;
+  color: var(--ink);
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
 }
 
-.fallback {
-  margin-top: 12px;
-  color: var(--muted);
-  font-size: 14px;
+.controls button:disabled {
+  opacity: 0.4;
+  cursor: default;
 }
 
-.fallback a {
+.links a {
   color: var(--accent);
   text-decoration: none;
   font-weight: 600;
+  margin-left: 8px;
+}
+
+.viewer {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #1a1f27;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 12px;
+  overflow: auto;
+  min-height: 60vh;
+}
+
+canvas {
+  background: #fff;
+  max-width: 100%;
+  height: auto;
+}
+
+.status {
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 14px;
 }
