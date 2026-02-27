@@ -26,7 +26,7 @@
   <div class="bg"></div>
   <header class="hero">
     <div class="hero-inner">
-      <div class="kicker">WWDC 2024–2025 Knowledge Archive</div>
+      <div class="kicker">WWDC 2024–2025 ARCHIVE</div>
       <h1>WWDC Library</h1>
       <p class="sub">Browse all WWDC sessions in one place — organized and easy to explore.</p>
       <div class="controls">
@@ -35,12 +35,14 @@
           <button id="searchBtn">Search</button>
         </div>
         <div class="filters">
-          <select id="yearFilter">
-            <option value="">All years</option>
-            <option value="2024">WWDC 2024</option>
-            <option value="2025">WWDC 2025</option>
-          </select>
-          <a class="ghost" href="INDEX.md">Full index</a>
+          <label class="year-filter" for="yearFilter">
+            <span class="year-filter-label">WWDC</span>
+            <select id="yearFilter">
+              <option value="" selected>All Years</option>
+              <option value="2024">2024</option>
+              <option value="2025">2025</option>
+            </select>
+          </label>
         </div>
       </div>
       <div class="chips">
@@ -52,8 +54,6 @@
       </div>
       <div class="meta">
         <span id="stats">Loading index…</span>
-        <span class="dot">•</span>
-        <span>No server. No API cost.</span>
       </div>
     </div>
   </header>

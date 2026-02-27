@@ -99,6 +99,19 @@ h1 {
   flex-wrap: wrap;
 }
 
+.year-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.year-filter-label {
+  color: var(--muted);
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
 .filters select,
 .filters .ghost {
   border: 1px solid var(--border);
