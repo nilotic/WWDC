@@ -8,6 +8,7 @@ const yearEl = document.getElementById('yearFilter');
 const resultsEl = document.getElementById('results');
 const countEl = document.getElementById('count');
 const statsEl = document.getElementById('stats');
+const YEAR_QUERY_RE = /\bwwdc[\s-]*(\d{2}|\d{4})\b/ig;
 
 function escapeHtml(str) {
   return str.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -112,18 +113,47 @@ function renderSectionedByYear(groups) {
   });
 }
 
-function filterYear(items) {
-  const y = yearEl.value;
+function parseSearchQuery(rawQuery) {
+  const years = new Set();
+  const query = rawQuery
+    .replace(YEAR_QUERY_RE, (_, yearToken) => {
+      const normalizedYear = yearToken.length === 2 ? `20${yearToken}` : yearToken;
+      years.add(normalizedYear);
+      return ' ';
+    })
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  return {
+    query,
+    year: years.size === 1 ? Array.from(years)[0] : '',
+  };
+}
+
+function effectiveYearFilter(parsedQuery) {
+  return yearEl.value || parsedQuery.year;
+}
+
+function filterYear(items, parsedQuery = { year: '' }) {
+  const y = effectiveYearFilter(parsedQuery);
   if (!y) return items;
   return items.filter((it) => it.year === y);
 }
 
 function search() {
-  const q = queryEl.value.trim();
-  if (!q) {
-    const featured = pickFeaturedByYear(filterYear(state.data));
+  const rawQuery = queryEl.value.trim();
+  const parsedQuery = parseSearchQuery(rawQuery);
+  const q = parsedQuery.query;
+
+  if (!rawQuery) {
+    const featured = pickFeaturedByYear(filterYear(state.data, parsedQuery));
     countEl.textContent = 'Featured sessions';
     renderSectionedByYear(featured);
+    return;
+  }
+
+  if (!q) {
+    render(filterYear(state.data, parsedQuery));
     return;
   }
 
@@ -134,10 +164,10 @@ function search() {
     } catch (e) {
       hits = [];
     }
-    const filtered = filterYear(hits);
+    const filtered = filterYear(hits, parsedQuery);
     if (filtered.length === 0) {
       countEl.textContent = 'No results — showing featured sessions';
-      renderSectionedByYear(pickFeaturedByYear(filterYear(state.data)));
+      renderSectionedByYear(pickFeaturedByYear(filterYear(state.data, parsedQuery)));
     } else {
       render(filtered);
     }
@@ -146,10 +176,10 @@ function search() {
     const hits = state.data.filter((d) =>
       d.title.toLowerCase().includes(lower) || d.text.toLowerCase().includes(lower)
     );
-    const filtered = filterYear(hits);
+    const filtered = filterYear(hits, parsedQuery);
     if (filtered.length === 0) {
       countEl.textContent = 'No results — showing featured sessions';
-      renderSectionedByYear(pickFeaturedByYear(filterYear(state.data)));
+      renderSectionedByYear(pickFeaturedByYear(filterYear(state.data, parsedQuery)));
     } else {
       render(filtered);
     }
