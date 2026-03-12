@@ -1,12 +1,11 @@
-#!/usr/bin/env bash
-set -euo pipefail
+#!/bin/sh
+set -eu
 
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 DEFAULT_MESSAGE="Deploy updates"
 
 sanitize_commit_message() {
-  local path="$1"
-  local name
+  path=$1
 
   name="$(basename "$path")"
   name="${name%-Summary.md}"
@@ -21,33 +20,37 @@ sanitize_commit_message() {
 }
 
 find_new_file_for_commit_message() {
-  local entry path first_candidate=""
-  local x_status y_status
+  first_candidate=""
+  tmp_file="$(mktemp)"
 
-  while IFS= read -r -d '' entry; do
-    [[ -z "$entry" ]] && continue
+  trap 'rm -f -- "$tmp_file"' 0 1 2 15
 
-    x_status="${entry:0:1}"
-    y_status="${entry:1:1}"
-    if [[ "$entry" == \?\?* ]]; then
-      path="${entry:3}"
-    elif [[ "$x_status" == "A" || "$y_status" == "A" ]]; then
-      path="${entry:3}"
-    else
-      continue
-    fi
+  {
+    git ls-files --others --exclude-standard
+    git diff --cached --name-only --diff-filter=A
+  } > "$tmp_file"
 
-    if [[ "$path" == *"-Summary.md" ]]; then
-      printf '%s\n' "$path"
-      return 0
-    fi
+  while IFS= read -r path; do
+    [ -n "$path" ] || continue
 
-    if [[ -z "$first_candidate" ]]; then
+    case "$path" in
+      *-Summary.md)
+        printf '%s\n' "$path"
+        rm -f -- "$tmp_file"
+        trap - 0 1 2 15
+        return 0
+        ;;
+    esac
+
+    if [ -z "$first_candidate" ]; then
       first_candidate="$path"
     fi
-  done < <(git status --porcelain -z --untracked-files=all)
+  done < "$tmp_file"
 
-  if [[ -n "$first_candidate" ]]; then
+  rm -f -- "$tmp_file"
+  trap - 0 1 2 15
+
+  if [ -n "$first_candidate" ]; then
     printf '%s\n' "$first_candidate"
   fi
 }
@@ -55,7 +58,7 @@ find_new_file_for_commit_message() {
 cd "$ROOT_DIR"
 
 BRANCH="$(git rev-parse --abbrev-ref HEAD)"
-if [[ "$BRANCH" == "HEAD" ]]; then
+if [ "$BRANCH" = "HEAD" ]; then
   echo "Cannot deploy from a detached HEAD." >&2
   exit 1
 fi
@@ -63,16 +66,16 @@ fi
 echo "Running reindex..."
 "$ROOT_DIR/scripts/reindex.sh"
 
-if [[ -z "$(git status --porcelain)" ]]; then
+if [ -z "$(git status --porcelain)" ]; then
   echo "No changes to deploy."
   exit 0
 fi
 
-if [[ $# -gt 0 ]]; then
-  COMMIT_MESSAGE="$*"
+if [ "$#" -gt 0 ]; then
+  COMMIT_MESSAGE=$*
 else
   NEW_FILE="$(find_new_file_for_commit_message || true)"
-  if [[ -n "$NEW_FILE" ]]; then
+  if [ -n "$NEW_FILE" ]; then
     COMMIT_MESSAGE="$(sanitize_commit_message "$NEW_FILE")"
   else
     COMMIT_MESSAGE="$DEFAULT_MESSAGE"
