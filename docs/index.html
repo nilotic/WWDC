@@ -20,7 +20,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Spectral:wght@400;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=20260224-1" />
+  <link rel="stylesheet" href="styles.css?v=20260312-2" />
 </head>
 <body>
   <div class="bg"></div>
@@ -37,10 +37,10 @@
         <div class="filters">
           <label class="year-filter" for="yearFilter">
             <span class="year-filter-label">WWDC</span>
-            <select id="yearFilter">
-              <option value="" selected>All Years</option>
-              <option value="2024">WWDC24</option>
-              <option value="2025">WWDC25</option>
+            <select id="yearFilter" aria-label="Filter by WWDC year">
+              <option value="" selected>All</option>
+              <option value="2024">24</option>
+              <option value="2025">25</option>
             </select>
           </label>
         </div>
@@ -96,6 +96,6 @@
   </footer>
 
   <script src="https://unpkg.com/lunr/lunr.js"></script>
-  <script src="search.js?v=20260310-1"></script>
+  <script src="search.js?v=20260312-4"></script>
 </body>
 </html>

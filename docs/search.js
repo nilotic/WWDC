@@ -9,9 +9,37 @@ const resultsEl = document.getElementById('results');
 const countEl = document.getElementById('count');
 const statsEl = document.getElementById('stats');
 const YEAR_QUERY_RE = /\bwwdc[\s-]*(\d{2}|\d{4})\b/ig;
+const FEATURED_KEYWORDS = [
+  'Keynote',
+  'Platforms State of the Union',
+  'State of the Union',
+  'What\'s new',
+  'Swift',
+  'SwiftUI',
+  'UIKit',
+  'iOS',
+].map((keyword) => normalizeSearchText(keyword));
 
 function escapeHtml(str) {
   return str.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+}
+
+function normalizeSearchText(str) {
+  return String(str || '')
+    .normalize('NFKC')
+    .replace(/[\u2018\u2019\u201A\u201B\u2032\u2035`']/g, '')
+    .replace(/[^\p{L}\p{N}]+/gu, ' ')
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, ' ');
+}
+
+function buildSearchDocument(item) {
+  return {
+    ...item,
+    normalized_title: normalizeSearchText(item.title),
+    normalized_text: normalizeSearchText(item.text),
+  };
 }
 
 function render(results) {
@@ -37,6 +65,18 @@ function render(results) {
   });
 }
 
+function renderNoResults(message = 'No sessions matched your search.') {
+  resultsEl.innerHTML = '';
+  resultsEl.classList.remove('results-grid');
+  resultsEl.classList.remove('results-sections');
+  countEl.textContent = 'No results';
+
+  const empty = document.createElement('div');
+  empty.className = 'empty-state';
+  empty.textContent = message;
+  resultsEl.appendChild(empty);
+}
+
 function buildIndex() {
   if (!window.lunr) return null;
   return lunr(function () {
@@ -44,26 +84,20 @@ function buildIndex() {
     this.field('title');
     this.field('text');
     this.field('year');
+    this.field('normalized_title');
+    this.field('normalized_text');
     state.data.forEach((doc) => this.add(doc));
   });
 }
 
 function pickFeaturedByYear(items, limitPerYear = 25) {
-  const keywords = [
-    'Keynote',
-    'Platforms State of the Union',
-    'State of the Union',
-    'What\'s new',
-    'Swift',
-    'SwiftUI',
-    'UIKit',
-    'iOS',
-  ];
   const groups = groupByYear(items);
   const result = [];
 
   groups.forEach((group) => {
-    const featured = group.items.filter((item) => keywords.some((k) => item.title.includes(k)));
+    const featured = group.items.filter((item) =>
+      FEATURED_KEYWORDS.some((keyword) => item.normalized_title.includes(keyword))
+    );
     const unique = Array.from(new Map(featured.map((i) => [i.id, i])).values());
     const filled = unique.concat(
       group.items.filter((i) => !unique.find((u) => u.id === i.id))
@@ -140,10 +174,28 @@ function filterYear(items, parsedQuery = { year: '' }) {
   return items.filter((it) => it.year === y);
 }
 
+function findStrictMatches(items, query) {
+  const normalizedQuery = normalizeSearchText(query);
+  if (!normalizedQuery) return items;
+
+  const exactMatches = items.filter((item) =>
+    item.normalized_title.includes(normalizedQuery) || item.normalized_text.includes(normalizedQuery)
+  );
+  if (exactMatches.length > 0) return exactMatches;
+
+  const terms = normalizedQuery.split(' ').filter(Boolean);
+  return items.filter((item) =>
+    terms.every((term) =>
+      item.normalized_title.includes(term) || item.normalized_text.includes(term)
+    )
+  );
+}
+
 function search() {
   const rawQuery = queryEl.value.trim();
   const parsedQuery = parseSearchQuery(rawQuery);
   const q = parsedQuery.query;
+  const normalizedQuery = normalizeSearchText(q);
 
   if (!rawQuery) {
     const featured = pickFeaturedByYear(filterYear(state.data, parsedQuery));
@@ -157,29 +209,32 @@ function search() {
     return;
   }
 
+  if (!normalizedQuery) {
+    render(filterYear(state.data, parsedQuery));
+    return;
+  }
+
   if (state.idx) {
     let hits = [];
     try {
-      hits = state.idx.search(q).map((r) => state.dataById.get(r.ref));
+      hits = state.idx.search(normalizedQuery).map((r) => state.dataById.get(r.ref)).filter(Boolean);
     } catch (e) {
       hits = [];
     }
-    const filtered = filterYear(hits, parsedQuery);
+    let filtered = filterYear(findStrictMatches(hits, normalizedQuery), parsedQuery);
     if (filtered.length === 0) {
-      countEl.textContent = 'No results — showing featured sessions';
-      renderSectionedByYear(pickFeaturedByYear(filterYear(state.data, parsedQuery)));
+      filtered = filterYear(findStrictMatches(state.data, normalizedQuery), parsedQuery);
+    }
+    if (filtered.length === 0) {
+      renderNoResults();
     } else {
       render(filtered);
     }
   } else {
-    const lower = q.toLowerCase();
-    const hits = state.data.filter((d) =>
-      d.title.toLowerCase().includes(lower) || d.text.toLowerCase().includes(lower)
-    );
+    const hits = findStrictMatches(state.data, normalizedQuery);
     const filtered = filterYear(hits, parsedQuery);
     if (filtered.length === 0) {
-      countEl.textContent = 'No results — showing featured sessions';
-      renderSectionedByYear(pickFeaturedByYear(filterYear(state.data, parsedQuery)));
+      renderNoResults();
     } else {
       render(filtered);
     }
@@ -188,12 +243,11 @@ function search() {
 
 async function init() {
   const res = await fetch('search.json');
-  state.data = await res.json();
+  state.data = (await res.json()).map(buildSearchDocument);
   state.dataById = new Map(state.data.map((d) => [d.id, d]));
   state.idx = buildIndex();
   statsEl.textContent = `${state.data.length} sessions indexed`;
-  countEl.textContent = 'Featured sessions';
-  renderSectionedByYear(pickFeaturedByYear(state.data));
+  search();
 }
 
 queryEl.addEventListener('input', () => search());

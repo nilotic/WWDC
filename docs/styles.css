@@ -172,6 +172,16 @@ h1 {
   display: block;
 }
 
+.empty-state {
+  margin-top: 16px;
+  padding: 24px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--card);
+  color: var(--muted);
+  font-family: "Spectral", serif;
+}
+
 .year-section {
   margin-bottom: 28px;
 }

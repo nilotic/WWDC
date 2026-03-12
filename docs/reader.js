@@ -9,10 +9,15 @@ function niceName(path) {
   return decodeURIComponent(parts[parts.length - 1] || '').replace(/-Summary\.md$/i, '');
 }
 
+function encodePath(path) {
+  return path.split('/').map(encodeURIComponent).join('/');
+}
+
 async function load() {
   const path = getParam('path');
   const meta = document.getElementById('meta');
   const article = document.getElementById('article');
+  const downloadLink = document.getElementById('downloadLink');
 
   if (!path) {
     article.textContent = 'No file specified.';
@@ -20,6 +25,9 @@ async function load() {
   }
 
   meta.textContent = niceName(path);
+  downloadLink.href = encodePath(path);
+  downloadLink.download = decodeURIComponent(path.split('/').pop() || 'summary.md');
+  downloadLink.hidden = false;
 
   try {
     const res = await fetch(path);
