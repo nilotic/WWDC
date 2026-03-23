@@ -8,6 +8,10 @@ const yearEl = document.getElementById('yearFilter');
 const resultsEl = document.getElementById('results');
 const countEl = document.getElementById('count');
 const statsEl = document.getElementById('stats');
+const QUERY_PARAM = 'q';
+const YEAR_PARAM = 'year';
+const RETURN_PARAM = 'from';
+const SEARCH_STATE_STORAGE_KEY = 'wwdc-search-state';
 const YEAR_QUERY_RE = /\bwwdc[\s-]*(\d{2}|\d{4})\b/ig;
 const FEATURED_KEYWORDS = [
   'Keynote',
@@ -42,6 +46,130 @@ function buildSearchDocument(item) {
   };
 }
 
+function persistQueryValue(value) {
+  queryEl.defaultValue = value;
+
+  if (value) {
+    queryEl.setAttribute('value', value);
+  } else {
+    queryEl.removeAttribute('value');
+  }
+}
+
+function applyQueryValue(value) {
+  queryEl.value = value;
+  persistQueryValue(value);
+}
+
+function buildCurrentIndexUrl() {
+  return `${window.location.pathname}${window.location.search}${window.location.hash}`;
+}
+
+function readSavedSearchState() {
+  try {
+    return JSON.parse(window.sessionStorage.getItem(SEARCH_STATE_STORAGE_KEY) || 'null');
+  } catch (_) {
+    return null;
+  }
+}
+
+function saveSearchState(rawQuery = queryEl.value, selectedYear = yearEl.value) {
+  const payload = {
+    query: rawQuery,
+    year: selectedYear,
+    scrollY: window.scrollY,
+    url: buildCurrentIndexUrl(),
+  };
+
+  try {
+    window.sessionStorage.setItem(SEARCH_STATE_STORAGE_KEY, JSON.stringify(payload));
+  } catch (_) {
+    // Ignore storage failures and keep the page functional.
+  }
+}
+
+function syncUrlState(rawQuery, selectedYear) {
+  const url = new URL(window.location.href);
+
+  if (rawQuery) {
+    url.searchParams.set(QUERY_PARAM, rawQuery);
+  } else {
+    url.searchParams.delete(QUERY_PARAM);
+  }
+
+  if (selectedYear) {
+    url.searchParams.set(YEAR_PARAM, selectedYear);
+  } else {
+    url.searchParams.delete(YEAR_PARAM);
+  }
+
+  window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
+  saveSearchState(rawQuery, selectedYear);
+}
+
+function restoreControlsFromUrl() {
+  const url = new URL(window.location.href);
+  const savedState = readSavedSearchState();
+  const restoredQuery = url.searchParams.get(QUERY_PARAM) ?? savedState?.query ?? '';
+  applyQueryValue(restoredQuery);
+
+  const year = url.searchParams.get(YEAR_PARAM) ?? savedState?.year ?? '';
+  if (Array.from(yearEl.options).some((option) => option.value === year)) {
+    yearEl.value = year;
+  }
+
+  if (savedState && savedState.url === buildCurrentIndexUrl()) {
+    state.pendingScrollY = savedState.scrollY;
+  }
+}
+
+function resyncSearchUi() {
+  restoreControlsFromUrl();
+  if (!state.data.length) return;
+  search();
+  restorePendingScroll();
+}
+
+function restoreControlsOnPageShow() {
+  window.requestAnimationFrame(() => {
+    resyncSearchUi();
+  });
+}
+
+function buildDetailUrl(rawUrl) {
+  if (!rawUrl) return '';
+
+  const url = new URL(rawUrl, window.location.href);
+  url.searchParams.set(RETURN_PARAM, buildCurrentIndexUrl());
+  return `${url.pathname}${url.search}${url.hash}`;
+}
+
+function buildResultLinks(item) {
+  const links = [];
+
+  if (item.summary_url) {
+    links.push(`<a href="${escapeHtml(buildDetailUrl(item.summary_url))}">Summary</a>`);
+  }
+
+  if (item.pdf_url) {
+    links.push(`<a href="${escapeHtml(buildDetailUrl(item.pdf_url))}">PDF</a>`);
+  }
+
+  return links.join(' ');
+}
+
+function restorePendingScroll() {
+  if (typeof state.pendingScrollY !== 'number') return;
+  const scrollY = state.pendingScrollY;
+  delete state.pendingScrollY;
+
+  window.requestAnimationFrame(() => {
+    window.requestAnimationFrame(() => {
+      window.scrollTo({ top: scrollY, behavior: 'auto' });
+    });
+  });
+}
+
 function render(results) {
   resultsEl.innerHTML = '';
   resultsEl.classList.add('results-grid');
@@ -52,14 +180,12 @@ function render(results) {
     const div = document.createElement('div');
     div.className = 'card';
     const excerpt = item.text ? item.text.slice(0, 220) + (item.text.length > 220 ? '…' : '') : 'No summary text available.';
-    const summaryLink = item.summary_url ? `<a href="${item.summary_url}">Summary</a>` : '';
-    const pdfLink = item.pdf_url ? `<a href="${item.pdf_url}">PDF</a>` : '';
 
     div.innerHTML = `
       <div class="year">WWDC ${item.year}</div>
       <h4>${escapeHtml(item.title)}</h4>
       <div class="excerpt">${escapeHtml(excerpt)}</div>
-      <div class="links">${summaryLink} ${pdfLink}</div>
+      <div class="links">${buildResultLinks(item)}</div>
     `;
     resultsEl.appendChild(div);
   });
@@ -132,14 +258,12 @@ function renderSectionedByYear(groups) {
       const div = document.createElement('div');
       div.className = 'card';
       const excerpt = item.text ? item.text.slice(0, 220) + (item.text.length > 220 ? '…' : '') : 'No summary text available.';
-      const summaryLink = item.summary_url ? `<a href="${item.summary_url}">Summary</a>` : '';
-      const pdfLink = item.pdf_url ? `<a href="${item.pdf_url}">PDF</a>` : '';
 
       div.innerHTML = `
         <div class="year">WWDC ${item.year}</div>
         <h4>${escapeHtml(item.title)}</h4>
         <div class="excerpt">${escapeHtml(excerpt)}</div>
-        <div class="links">${summaryLink} ${pdfLink}</div>
+        <div class="links">${buildResultLinks(item)}</div>
       `;
       grid.appendChild(div);
     });
@@ -192,7 +316,11 @@ function findStrictMatches(items, query) {
 }
 
 function search() {
-  const rawQuery = queryEl.value.trim();
+  const inputQuery = queryEl.value;
+  const rawQuery = inputQuery.trim();
+  const selectedYear = yearEl.value;
+  persistQueryValue(inputQuery);
+  syncUrlState(inputQuery, selectedYear);
   const parsedQuery = parseSearchQuery(rawQuery);
   const q = parsedQuery.query;
   const normalizedQuery = normalizeSearchText(q);
@@ -242,12 +370,14 @@ function search() {
 }
 
 async function init() {
+  restoreControlsFromUrl();
   const res = await fetch('search.json');
   state.data = (await res.json()).map(buildSearchDocument);
   state.dataById = new Map(state.data.map((d) => [d.id, d]));
   state.idx = buildIndex();
   statsEl.textContent = `${state.data.length} sessions indexed`;
   search();
+  restorePendingScroll();
 }
 
 queryEl.addEventListener('input', () => search());
@@ -261,6 +391,13 @@ document.querySelectorAll('.chip').forEach((chip) => {
     search();
   });
 });
+
+window.addEventListener('pagehide', () => {
+  saveSearchState();
+});
+
+window.addEventListener('pageshow', restoreControlsOnPageShow);
+window.addEventListener('popstate', resyncSearchUi);
 
 init().catch(() => {
   statsEl.textContent = 'Failed to load search data.';

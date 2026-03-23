@@ -3,6 +3,47 @@ function getParam(name) {
   return url.searchParams.get(name);
 }
 
+function getSafeBackHref() {
+  const from = getParam('from');
+  if (!from) return 'index.html';
+
+  try {
+    const url = new URL(from, window.location.href);
+    if (url.origin !== window.location.origin) return 'index.html';
+    return `${url.pathname}${url.search}${url.hash}`;
+  } catch (_) {
+    return 'index.html';
+  }
+}
+
+function canUseHistoryBack(backHref) {
+  if (window.history.length <= 1 || !document.referrer) return false;
+
+  try {
+    const referrerUrl = new URL(document.referrer, window.location.href);
+    const targetUrl = new URL(backHref, window.location.href);
+
+    return referrerUrl.origin === window.location.origin
+      && referrerUrl.pathname === targetUrl.pathname
+      && referrerUrl.search === targetUrl.search;
+  } catch (_) {
+    return false;
+  }
+}
+
+function configureBackLink() {
+  const backLink = document.querySelector('.back');
+  if (!backLink) return;
+
+  const backHref = getSafeBackHref();
+  backLink.href = backHref;
+  backLink.addEventListener('click', (event) => {
+    if (!canUseHistoryBack(backHref)) return;
+    event.preventDefault();
+    window.history.back();
+  });
+}
+
 function niceName(path) {
   if (!path) return '';
   const parts = path.split('/');
@@ -25,6 +66,8 @@ const downloadBtn = document.getElementById('download');
 let pdfDoc = null;
 const errors = [];
 let downloadUrl = null;
+
+configureBackLink();
 
 function setStatus(msg) {
   statusEl.textContent = msg;
