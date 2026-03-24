@@ -54,6 +54,31 @@ function encodePath(path) {
   return path.split('/').map(encodeURIComponent).join('/');
 }
 
+function repairStandaloneHeadings(root) {
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const candidates = [];
+
+  while (walker.nextNode()) {
+    const node = walker.currentNode;
+    const parentTag = node.parentElement?.tagName;
+    if (parentTag === 'CODE' || parentTag === 'PRE') continue;
+
+    const trimmed = node.nodeValue.trim();
+    if (!trimmed || trimmed.includes('\n')) continue;
+
+    const match = trimmed.match(/^(#{1,6})\s+(.+)$/);
+    if (!match) continue;
+
+    candidates.push({ node, level: match[1].length, text: match[2] });
+  }
+
+  candidates.forEach(({ node, level, text }) => {
+    const heading = document.createElement(`h${level}`);
+    heading.textContent = text;
+    node.replaceWith(heading);
+  });
+}
+
 async function load() {
   const path = getParam('path');
   const meta = document.getElementById('meta');
@@ -76,6 +101,7 @@ async function load() {
     const md = await res.text();
     const html = marked.parse(md);
     article.innerHTML = DOMPurify.sanitize(html);
+    repairStandaloneHeadings(article);
   } catch (e) {
     article.textContent = 'Failed to load summary.';
   }
