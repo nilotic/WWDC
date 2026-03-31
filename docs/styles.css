@@ -235,23 +235,6 @@ h1 {
   font-weight: 600;
 }
 
-.about {
-  margin-top: 48px;
-  padding: 24px;
-  border-radius: 16px;
-  border: 1px solid var(--border);
-  background: rgba(9, 12, 18, 0.8);
-}
-
-.about-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 12px;
-  margin-top: 12px;
-}
-
-.label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; }
-
 .footer {
   border-top: 1px solid var(--border);
   padding: 20px 24px;
