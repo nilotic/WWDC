@@ -1,4 +1,4 @@
-# WWDC 2024–2025 Index
+# WWDC 2024–2026 Index
 
 ## WWDC 2024
 
@@ -286,3 +286,9 @@
 | What’s new in visionOS 26 | [View Summary](reader.html?path=2025/What%E2%80%99s%20new%20in%20visionOS%2026/What%E2%80%99s%20new%20in%20visionOS%2026-Summary.md) | [View PDF](pdf.html?path=2025/What%E2%80%99s%20new%20in%20visionOS%2026/%5BWWDC%2025%5D%20What%E2%80%99s%20new%20in%20visionOS%2026.pdf) |
 | What’s new in watchOS 26 | [View Summary](reader.html?path=2025/What%E2%80%99s%20new%20in%20watchOS%2026/What%E2%80%99s%20new%20in%20watchOS%2026-Summary.md) | [View PDF](pdf.html?path=2025/What%E2%80%99s%20new%20in%20watchOS%2026/%5BWWDC%2025%5D%20What%E2%80%99s%20new%20in%20watchOS%2026.pdf) |
 | What’s new in widgets | [View Summary](reader.html?path=2025/What%E2%80%99s%20new%20in%20widgets/What%E2%80%99s%20new%20in%20widgets-Summary.md) | [View PDF](pdf.html?path=2025/What%E2%80%99s%20new%20in%20widgets/%5BWWDC%2025%5D%20What%E2%80%99s%20new%20in%20widgets.pdf) |
+
+## WWDC 2026
+
+| Session | Summary | PDF |
+| --- | --- | --- |
+| Keynote | — | [View PDF](pdf.html?path=2026/Keynote/%5BWWDC%2026%5D%20Keynote.pdf) |
