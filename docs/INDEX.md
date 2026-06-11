@@ -291,4 +291,4 @@
 
 | Session | Summary | PDF |
 | --- | --- | --- |
-| Keynote | — | [View PDF](pdf.html?path=2026/Keynote/%5BWWDC%2026%5D%20Keynote.pdf) |
+| Keynote | [View Summary](reader.html?path=2026/Keynote/%5BWWDC%2026%5D%20Keynote.md) | [View PDF](pdf.html?path=2026/Keynote/%5BWWDC%2026%5D%20Keynote.pdf) |

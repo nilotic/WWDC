@@ -12,13 +12,19 @@ def collect(year_dir: Path):
     for d in sorted([p for p in year_dir.iterdir() if p.is_dir()]):
         title = d.name
         summary = None
+        fallback_summaries = []
         pdf = None
         for p in d.iterdir():
             if p.is_file():
-                if p.suffix.lower() == '.md' and p.name.endswith('-Summary.md'):
-                    summary = p
+                if p.suffix.lower() == '.md':
+                    if p.name.endswith('-Summary.md'):
+                        summary = p
+                    else:
+                        fallback_summaries.append(p)
                 elif p.suffix.lower() == '.pdf':
                     pdf = p
+        if summary is None and len(fallback_summaries) == 1:
+            summary = fallback_summaries[0]
         rows.append((title, summary, pdf))
     return rows
 

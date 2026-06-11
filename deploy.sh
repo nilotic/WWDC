@@ -40,6 +40,8 @@ sanitize_commit_message() {
   name="${name%-Summary.md}"
   name="${name%.md}"
   name="${name%.pdf}"
+  name="${name#\[WWDC 26\] }"
+  name="${name#\[WWDC26\] }"
   name="${name#\[WWDC 25\] }"
   name="${name#\[WWDC25\] }"
   name="${name#\[WWDC 24\] }"
