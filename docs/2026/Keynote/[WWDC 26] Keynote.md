@@ -64,14 +64,6 @@ Liquid Glass의 주요 변경점은 다음과 같다.
 
 Liquid Glass 대응은 더 이상 단일 디자인 값에 맞추는 일이 아니다. 사용자가 투명도와 틴트를 조정할 수 있기 때문에 앱 내부 커스텀 카드, toolbar, bottom sheet, overlay, navigation background가 다양한 시스템 설정에서도 가독성을 유지하는지 확인해야 한다.
 
-HomeCafe처럼 이미지와 카드가 많은 앱은 다음 항목을 특히 확인해야 한다.
-
-- Station 카드 위 텍스트 가독성
-- Recipe detail의 배경 이미지와 control 간 대비
-- Glass overlay 위의 버튼/칩/태그 가독성
-- Light/Dark mode 및 tint 설정 조합
-- 커스텀 blur와 시스템 Liquid Glass가 겹칠 때의 시각적 과밀도
-
 ### 2.3 macOS Golden Gate 디자인 개선
 
 macOS에서는 Liquid Glass를 보완하면서도 Mac 특유의 구조감을 다시 강화하는 방향이 제시되었다.
@@ -118,8 +110,6 @@ Apple은 메모리 사용량, CPU 활용률, 네트워크 작업, 디스플레�
 - actor/main actor 경계 최소화
 - 앱 시작 시 analytics/config/auth 작업 분리
 
-HomeCafe는 이미 서버에서 Home section ID를 받고, 나머지는 CloudKit/SwiftData를 사용하는 구조를 검토해 왔다. 이번 OS 방향을 보면 “첫 화면은 최소 데이터로 즉시 표시하고, 나머지는 background sync”라는 현재 방향이 더 타당해 보인다.
-
 ### 2.5 네트워크 전환 개선
 
 iPhone은 Wi‑Fi와 Cellular 사이를 더 스마트하게 전환하도록 개선된다. 카페 앞을 지나가며 약한 Wi‑Fi에 붙거나, 비행기에서 내린 뒤 항공사 네트워크에 계속 연결되는 상황을 줄이는 것이 목표다.
@@ -127,13 +117,6 @@ iPhone은 Wi‑Fi와 Cellular 사이를 더 스마트하게 전환하도록 개�
 ### 개발자 관점
 
 네트워크 전환이 개선되더라도 앱은 여전히 연결 상태 변화와 partial failure에 강해야 한다.
-
-HomeCafe 기준 체크 항목은 다음과 같다.
-
-- CloudKit fetch 중 네트워크 전환 발생 시 retry 정책
-- Home API 실패 시 cached section fallback
-- recipe detail 진입 시 local cache 우선 사용
-- BLE scale 연결과 network task가 동시에 있을 때 UI blocking 방지
 
 ### 2.6 검색 인프라 재설계
 
@@ -150,24 +133,6 @@ Apple은 iOS, iPadOS, macOS에서 Spotlight, Photos, Mail을 구동하는 검색
 ### 개발자 관점
 
 이 변화는 Spotlight indexing의 중요도가 더 커졌다는 뜻이다. 앱 내부 데이터를 시스템 검색에 잘 노출하면 Siri AI, Spotlight, Apple Intelligence 흐름과 자연스럽게 연결될 가능성이 높다.
-
-HomeCafe에서 색인 후보는 다음과 같다.
-
-- Recipe
-- Cafe / Roastery
-- CoffeeBean
-- Flavor note
-- Brew method
-- Creator / Barista
-- Saved recipe
-- 최근 사용한 brew recipe
-
-예상 사용 예시는 다음과 같다.
-
-- “HomeCafe에서 산미 있는 에티오피아 레시피 찾아줘”
-- “지난번에 저장한 아이스 브루 레시피 열어줘”
-- “Aery Coffee 파나마 게이샤 레시피 보여줘”
-- “V60 레시피 중에 15g 쓰는 것 찾아줘”
 
 ## Chapter 3. Trust and safety
 
@@ -234,14 +199,6 @@ Apple은 개발자들이 더 안전한 자녀용 앱을 만들 수 있도록 API
 ### 개발자 관점
 
 일반 생산성/라이프스타일 앱이라도 사용자 생성 콘텐츠, 커뮤니티, 메시징, AI 대화, 이미지 생성 기능이 들어가면 자녀 안전 요구사항과 연결될 수 있다.
-
-HomeCafe는 현재 직접적인 아동 대상 앱은 아니지만, 향후 카페 계정, 사용자 레시피 공유, 이미지 업로드, 댓글, AI 추천 기능이 생기면 다음을 고려해야 한다.
-
-- UGC 콘텐츠 moderation
-- 연령대별 기능 제한
-- AI 생성 콘텐츠 안전성
-- 이미지 업로드/공유 시 부적절 콘텐츠 필터링
-- 부모 승인과 무관하더라도 안전한 기본값 제공
 
 ## Chapter 4. Apple Intelligence and Siri
 
@@ -364,8 +321,6 @@ Siri는 타이핑 가능한 거의 모든 곳에서 글쓰기 도구로 동작�
 
 텍스트 입력을 제공하는 앱은 시스템 글쓰기 도구와 충돌하지 않도록 확인해야 한다. 커스텀 text editor, Markdown editor, rich text editor를 구현한 앱은 selection, focus, input accessory, undo/redo 흐름을 점검해야 한다.
 
-HomeCafe에서 카페/로스터리 설명, 레시피 메모, tasting note 입력 기능이 있다면 Siri writing tools와 자연스럽게 연결될 수 있다.
-
 ## Apple Intelligence가 앱에 들어오는 방식
 
 ### 5.1 Safari
@@ -440,18 +395,6 @@ Apple Intelligence는 커뮤니케이션과 일정 관리에도 깊이 통합된
 
 단축어의 자연어 생성이 강해질수록 App Intents 품질이 중요해진다. 앱이 제공하는 action이 명확하고, parameter가 자연어로 잘 설명되며, entity가 잘 정의되어 있어야 Siri와 Shortcuts가 사용자의 의도를 정확히 매핑할 수 있다.
 
-HomeCafe의 App Intents 후보는 다음과 같다.
-
-| Intent | 설명 |
-|---|---|
-| StartRecipeIntent | 특정 레시피로 브루잉 시작 |
-| SearchRecipeIntent | 조건 기반 레시피 검색 |
-| OpenBeanIntent | 특정 원두 상세 열기 |
-| RecommendRecipeIntent | 취향/상황 기반 레시피 추천 |
-| StartTimerIntent | 레시피 단계 기반 타이머 시작 |
-| LogBrewIntent | 추출 기록 저장 |
-| FindCafeIntent | 카페/로스터리 검색 |
-
 ## Image Playground와 사진 앱
 
 ### 6.1 Image Playground
@@ -489,14 +432,6 @@ Spatial Reframing은 사진 촬영 후에도 카메라 위치를 바꾼 것처�
 ### 개발자 관점
 
 사진과 이미지가 중요한 앱은 시스템 이미지 편집 기능의 발전으로 사용자의 기대 수준이 크게 올라갈 수 있다. 단순 crop/filter 수준의 편집 기능은 시스템 기능과 비교될 수 있으므로, 앱 고유의 맥락 기반 편집이나 워크플로 통합이 중요해진다.
-
-HomeCafe에서는 다음 가능성이 있다.
-
-- 원두 패키지 이미지 정리
-- 레시피 카드용 이미지 비율 변환
-- Station 이미지 생성/편집 workflow 참고
-- 카페 이미지에서 불필요한 요소 제거
-- 커피 레시피 썸네일 자동 생성
 
 ## 개발자 도구와 프레임워크
 
@@ -546,79 +481,6 @@ Xcode는 에이전틱 코딩 시대의 중심 도구로 소개되었다.
 - 동적 크기 조절
 - 더 빠른 반복 테스트
 
-### 개발자 관점
-
-HomeCafe처럼 타이머, 스크롤, 카드, 브루잉 단계, BLE scale 상태가 함께 움직이는 앱은 Device Hub의 멀티터치 시뮬레이션과 동적 크기 조절 기능이 유용할 수 있다.
-
-특히 확인할 화면은 다음과 같다.
-
-- Home Station section
-- Recipe detail
-- Brew timer
-- Scale connection state UI
-- Recipe step timeline
-- iPad split layout
-- Liquid Glass overlay가 있는 화면
-
-## HomeCafe 적용 우선순위
-
-### 1순위: Liquid Glass 재점검
-
-- Home 화면 Station 카드
-- Recommendation 카드
-- Recipe detail 배경 이미지
-- Bottom control 영역
-- Sheet / popover / navigation background
-- 투명도/틴트 사용자 설정 변화 대응
-
-### 2순위: App Intents 설계
-
-Siri AI와 Shortcuts 자연어 생성이 강화되면서 HomeCafe의 핵심 기능을 App Intents로 노출할 가치가 커졌다.
-
-우선순위가 높은 intent는 다음과 같다.
-
-1. 레시피 시작
-2. 레시피 검색
-3. 원두 검색
-4. 추천 레시피 열기
-5. 추출 기록 저장
-6. 타이머 시작
-
-### 3순위: Spotlight indexing
-
-HomeCafe의 콘텐츠 데이터가 Siri AI와 Spotlight에서 검색되도록 인덱싱 구조를 설계해야 한다.
-
-색인 우선순위는 다음과 같다.
-
-1. Recipe
-2. CoffeeBean
-3. Cafe / Roastery
-4. BrewMethod
-5. Flavor note
-6. Creator
-7. Saved / recently brewed recipe
-
-### 4순위: Foundation Model framework 검토
-
-HomeCafe에서 Foundation Model framework가 유용할 수 있는 영역은 다음과 같다.
-
-- 원두 tasting note 요약
-- 사용자 취향 기반 레시피 추천
-- 브루잉 카드 이미지 이해
-- 공식 레시피 텍스트 구조화
-- 카페/로스터리 설명 초안 생성
-- 레시피 step 설명 개선
-
-단, 서버 모델 또는 iCloud+ 사용량과 연결되는 기능은 비용/제한/가용성을 반드시 확인해야 한다.
-
-### 5순위: Xcode / Device Hub 테스트 플로우 도입
-
-- iPhone/iPad 크기별 레이아웃 확인
-- 멀티터치 gesture 테스트
-- Dynamic Type / Appearance / Liquid Glass 설정별 확인
-- BLE scale 연결 상태 UI 확인
-- SwiftUI preview와 실제 Device Hub 테스트 역할 분리
-
 ## WWDC Archive용 짧은 설명
 
 WWDC26 Keynote introduced Apple’s next major platform updates, focusing on refined system experiences, expanded child safety tools, and a major leap forward for Apple Intelligence and Siri. Apple refined Liquid Glass with improved readability and user customization, announced macOS Golden Gate, improved system responsiveness across app launch, photos, AirDrop, files, networking, and search, and continued broad device support with iOS 27.
@@ -631,7 +493,6 @@ For developers, the most important changes are App Intents, Spotlight indexing, 
 
 - [ ] iOS 27 / iPadOS / macOS Golden Gate beta에서 앱 빌드 확인
 - [ ] Liquid Glass 투명도/틴트 설정별 UI 가독성 확인
-- [ ] Home screen, Recipe detail, Brew timer의 glass overlay 점검
 - [ ] App Intents 후보 정의
 - [ ] Spotlight indexing 대상 모델 정리
 - [ ] Foundation Model framework 세션 확인
@@ -661,5 +522,3 @@ For developers, the most important changes are App Intents, Spotlight indexing, 
 WWDC26 Keynote는 WWDC25에서 제시된 Liquid Glass와 Apple Intelligence 방향을 더 현실적인 제품 경험으로 확장하는 발표였다. Liquid Glass는 가독성과 사용자 설정을 통해 안정화 단계에 들어갔고, 플랫폼 성능과 검색 인프라는 일상적인 체감 품질을 높이는 방향으로 개선됐다.
 
 가장 큰 변화는 Siri AI다. Siri가 개인 맥락, 화면 내용, 앱 동작, 웹 지식, 이미지 이해를 조합하는 시스템 레벨 인터페이스로 확장되면서, 앱이 App Intents와 Spotlight에 얼마나 잘 연결되어 있는지가 앞으로 더 중요해질 가능성이 높다.
-
-HomeCafe 관점에서는 Liquid Glass 대응을 계속 유지하면서, App Intents와 Spotlight indexing을 먼저 설계하고, Foundation Model framework와 이미지 입력 기능을 통해 원두/레시피/브루잉 카드 데이터를 구조화하는 가능성을 검토하는 것이 좋다.
