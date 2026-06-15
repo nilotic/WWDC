@@ -291,5 +291,6 @@
 
 | Session | Summary | PDF |
 | --- | --- | --- |
+| Best practices for integrating visual intelligence in your app | [View Summary](docs/reader.html?path=2026/Best%20practices%20for%20integrating%20visual%20intelligence%20in%20your%20app/%5BWWDC%2026%5D%20Best%20practices%20for%20integrating%20visual%20intelligence%20in%20your%20app.md) | [View PDF](docs/pdf.html?path=2026/Best%20practices%20for%20integrating%20visual%20intelligence%20in%20your%20app/%5BWWDC%2026%5D%20Best%20practices%20for%20integrating%20visual%20intelligence%20in%20your%20app.pdf) |
 | Keynote | [View Summary](docs/reader.html?path=2026/Keynote/%5BWWDC%2026%5D%20Keynote.md) | [View PDF](docs/pdf.html?path=2026/Keynote/%5BWWDC%2026%5D%20Keynote.pdf) |
 | Platforms State of the Union | [View Summary](docs/reader.html?path=2026/Platforms%20State%20of%20the%20Union/%5BWWDC%2026%5D%20Platforms%20State%20of%20the%20Union.md) | [View PDF](docs/pdf.html?path=2026/Platforms%20State%20of%20the%20Union/%5BWWDC%2026%5D%20Platforms%20State%20of%20the%20Union.pdf) |
