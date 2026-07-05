@@ -10,7 +10,7 @@ DOCS_ROOT = REPO_ROOT / 'docs'
 def collect(year_dir: Path):
     rows = []
     for d in sorted([p for p in year_dir.iterdir() if p.is_dir()]):
-        title = d.name
+        title = display_title(d.name)
         summary = None
         fallback_summaries = []
         pdf = None
@@ -27,6 +27,10 @@ def collect(year_dir: Path):
             summary = fallback_summaries[0]
         rows.append((title, summary, pdf))
     return rows
+
+
+def display_title(path_name: str) -> str:
+    return path_name.replace('Code-along - ', 'Code-along: ', 1)
 
 
 def enc(path: str) -> str:
