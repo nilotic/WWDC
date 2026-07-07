@@ -7,6 +7,28 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 DOCS_ROOT = REPO_ROOT / 'docs'
 
 
+def validate_source_paths():
+    invalid_paths = []
+    for p in DOCS_ROOT.rglob('*'):
+        rel = p.relative_to(DOCS_ROOT)
+        if any(':' in part for part in rel.parts):
+            invalid_paths.append(rel)
+
+    if not invalid_paths:
+        return
+
+    lines = [
+        'Jekyll cannot build docs paths containing ":".',
+        'Rename path components to use " - " instead.',
+        '',
+        'Invalid paths:',
+    ]
+    lines.extend(f'  - docs/{path}' for path in invalid_paths[:20])
+    if len(invalid_paths) > 20:
+        lines.append(f'  ... and {len(invalid_paths) - 20} more')
+    raise SystemExit('\n'.join(lines))
+
+
 def collect(year_dir: Path):
     rows = []
     for d in sorted([p for p in year_dir.iterdir() if p.is_dir()]):
@@ -131,6 +153,7 @@ def build_search():
 def main():
     if not DOCS_ROOT.exists():
         raise SystemExit(f'missing docs root: {DOCS_ROOT}')
+    validate_source_paths()
     build_indexes()
     build_search()
     print('Updated docs/INDEX.md, INDEX.md, and docs/search.json')
